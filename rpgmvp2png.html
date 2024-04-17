@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>RPG Maker MV 文件转换工具</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 500px;
+            width: 100%;
+            background-color: #fff;
+            border-radius: 5px;
+            padding: 30px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .file-input {
+            margin-bottom: 20px;
+        }
+
+        .file-input label {
+            display: block;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .file-input input[type="file"] {
+            display: inline-block;
+            background-color: #f5f5f5;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 6px 12px;
+            cursor: pointer;
+        }
+
+        .option-input {
+            margin-bottom: 20px;
+        }
+
+        .option-input label {
+            display: inline-flex;
+            align-items: center;
+            font-size: 14px;
+            color: #555;
+            cursor: pointer;
+        }
+
+        .option-input input[type="checkbox"] {
+            margin-right: 8px;
+        }
+
+        .footer {
+            font-size: 12px;
+            color: #888;
+            margin-top: 20px;
+        }
+    </style>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+    <script>
+        // 转换 RPG Maker MV 文件的函数
+        function decryptRPGMVPFile(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const data = new Uint8Array(e.target.result);
+                    const pngHeader = new Uint8Array([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52]);
+                    const pngData = new Uint8Array(pngHeader.length + data.length - 32);
+                    pngData.set(pngHeader);
+                    pngData.set(data.slice(32), pngHeader.length);
+                    resolve(pngData);
+                };
+                reader.readAsArrayBuffer(file);
+            });
+        }
+
+        // 处理文件选择事件的函数
+        async function handleFileSelect(event) {
+            const files = event.target.files;
+            const packFiles = document.getElementById('pack-files').checked;
+
+            if (packFiles) {
+                // 将所有图片打包在一起下载
+                const zipWriter = new JSZip();
+                const decryptPromises = [];
+
+                for (const file of files) {
+                    if (file.name.endsWith('.rpgmvp')) {
+                        decryptPromises.push(decryptRPGMVPFile(file).then((pngData) => {
+                            zipWriter.file(file.name.replace('.rpgmvp', '.png'), pngData);
+                        }));
+                    }
+                }
+
+                await Promise.all(decryptPromises);
+
+                const content = await zipWriter.generateAsync({ type: 'blob' });
+                const url = URL.createObjectURL(content);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'converted_files.zip';
+                link.click();
+                URL.revokeObjectURL(url);
+            } else {
+                // 单独下载每个图片
+                for (const file of files) {
+                    if (file.name.endsWith('.rpgmvp')) {
+                        const pngData = await decryptRPGMVPFile(file);
+                        const blob = new Blob([pngData], { type: 'image/png' });
+                        const url = URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.download = file.name.replace('.rpgmvp', '.png');
+                        link.click();
+                        URL.revokeObjectURL(url);
+                    }
+                }
+            }
+        }
+    </script>
+
+</head>
+
+<body>
+    <div class="container">
+        <h1>RPG Maker MV 文件转换工具</h1>
+        <div class="file-input">
+            <label for="file">选择一个或多个 .rpgmvp 文件:</label>
+            <input type="file" id="file" accept=".rpgmvp" onchange="handleFileSelect(event)" multiple>
+        </div>
+        <div class="option-input">
+            <label>
+                <input type="checkbox" id="pack-files">
+                将所有转换后的图片打包下载
+            </label>
+        </div>
+        <div class="footer">
+            &copy; 2023 RPG Maker MV 文件转换工具
+        </div>
+    </div>
+</body>
+
+</html>
