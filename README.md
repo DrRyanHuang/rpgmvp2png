@@ -19,7 +19,7 @@
 
 
 <!-- logo -->
-<img alt="Xiao" src="CutIn_Furea.png" width="50%"> </img>
+<img alt="Xiao" src="logo/CutIn_Furea.png" width="50%"> </img>
 <br/>
 <i>Loved the project? Please consider forking the project to help it improve!</i>
 

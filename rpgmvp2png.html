@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html>
 
-<head>
-    <title>RPG Maker MV 文件转换工具</title>
-    <style>
+    <head>
+        <title>RPG Maker MV 文件转换工具</title>
+        <style>
         body {
             font-family: Arial, sans-serif;
             background-color: #f0f0f0;
@@ -72,8 +72,9 @@
         }
     </style>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
-    <script>
+        <script
+            src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+        <script>
         // 转换 RPG Maker MV 文件的函数
         function decryptRPGMVPFile(file) {
             return new Promise((resolve) => {
@@ -135,25 +136,26 @@
         }
     </script>
 
-</head>
+    </head>
 
-<body>
-    <div class="container">
-        <h1>RPG Maker MV 文件转换工具</h1>
-        <div class="file-input">
-            <label for="file">选择一个或多个 .rpgmvp 文件:</label>
-            <input type="file" id="file" accept=".rpgmvp" onchange="handleFileSelect(event)" multiple>
+    <body>
+        <div class="container">
+            <h1>RPG Maker MV 文件转换工具</h1>
+            <div class="file-input">
+                <label for="file">选择一个或多个 .rpgmvp 文件:</label>
+                <input type="file" id="file" accept=".rpgmvp"
+                    onchange="handleFileSelect(event)" multiple>
+            </div>
+            <div class="option-input">
+                <label>
+                    <input type="checkbox" id="pack-files">
+                    将所有转换后的图片打包下载
+                </label>
+            </div>
+            <div class="footer">
+                &copy; 2023 RPG Maker MV 文件转换工具
+            </div>
         </div>
-        <div class="option-input">
-            <label>
-                <input type="checkbox" id="pack-files">
-                将所有转换后的图片打包下载
-            </label>
-        </div>
-        <div class="footer">
-            &copy; 2023 RPG Maker MV 文件转换工具
-        </div>
-    </div>
-</body>
+    </body>
 
 </html>
