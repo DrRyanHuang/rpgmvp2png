@@ -1,3 +1,5 @@
+English | [简体中文](./README_cn.md)
+
 <div align="center">
 <!-- 标题 -->
 
