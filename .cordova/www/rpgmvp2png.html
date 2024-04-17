@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>RPG Maker MV 文件转换工具</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f0f0f0;
+        margin: 0;
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+      }
+
+      .container {
+        max-width: 500px;
+        width: 100%;
+        background-color: #fff;
+        border-radius: 5px;
+        padding: 30px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        text-align: center;
+      }
+
+      h1 {
+        font-size: 24px;
+        margin-bottom: 20px;
+      }
+
+      .file-input {
+        margin-bottom: 20px;
+      }
+
+      .file-input label {
+        display: block;
+        font-size: 16px;
+        margin-bottom: 10px;
+      }
+
+      .file-input input[type="file"] {
+        display: inline-block;
+        background-color: #f5f5f5;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        padding: 6px 12px;
+        cursor: pointer;
+      }
+
+      .option-input {
+        margin-bottom: 20px;
+      }
+
+      .option-input label {
+        display: inline-flex;
+        align-items: center;
+        font-size: 14px;
+        color: #555;
+        cursor: pointer;
+      }
+
+      .option-input input[type="checkbox"] {
+        margin-right: 8px;
+      }
+
+      .footer {
+        font-size: 12px;
+        color: #888;
+        margin-top: 20px;
+      }
+
+      .github-link {
+        margin-top: 5px;
+        text-align: center;
+        font-size: 12px;
+      }
+    </style>
+
+    <script>
+      document.addEventListener("deviceready", onDeviceReady, false);
+
+      function onDeviceReady() {
+        // 请求文件访问权限
+        cordova.plugins.permissions.requestPermission(
+          cordova.plugins.permissions.READ_EXTERNAL_STORAGE,
+          successCallback,
+          errorCallback
+        );
+      }
+
+      function successCallback(status) {
+        if (status.hasPermission) {
+          // 已获得权限,执行文件操作
+          document
+            .getElementById("file")
+            .addEventListener("change", handleFileSelect, false);
+        } else {
+          // 权限被拒绝
+          console.warn("文件访问权限被拒绝");
+          alert("请授予文件访问权限以使用此应用程序");
+        }
+      }
+
+      function errorCallback(error) {
+        console.error("请求权限时出错:", error);
+        alert("请求文件访问权限时出错");
+      }
+
+      function handleFileSelect(event) {
+        const files = event.target.files;
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          if (file.name.endsWith(".rpgmvp")) {
+            convertRpgmvpToImage(file);
+          }
+        }
+      }
+
+      function convertRpgmvpToImage(file) {
+        // 获取文件的本地 URL
+        const fileURL = file.localURL;
+
+        // 解析文件 URL 并获取 FileEntry 对象
+        window.resolveLocalFileSystemURL(
+          fileURL,
+          function (fileEntry) {
+            // 读取文件内容
+            fileEntry.file(function (file) {
+              const reader = new FileReader();
+
+              reader.onloadend = function () {
+                // 处理文件内容并生成图片数据
+                const rpgmvpData = new Uint8Array(this.result);
+                const pngData = convertRpgmvpToPng(rpgmvpData);
+
+                // 获取外部数据目录的 URL
+                const dirURL = cordova.file.externalDataDirectory;
+
+                // 解析目录 URL 并获取 DirectoryEntry 对象
+                window.resolveLocalFileSystemURL(
+                  dirURL,
+                  function (dirEntry) {
+                    // 创建新的图片文件
+                    const fileName = file.name.replace(".rpgmvp", ".png");
+                    dirEntry.getFile(
+                      fileName,
+                      { create: true, exclusive: false },
+                      function (fileEntry) {
+                        // 创建文件写入器
+                        fileEntry.createWriter(function (fileWriter) {
+                          // 将图片数据写入文件
+                          fileWriter.write(pngData);
+                          console.log("转换完成:", fileName);
+                        }, errorHandler);
+                      },
+                      errorHandler
+                    );
+                  },
+                  errorHandler
+                );
+              };
+
+              reader.readAsArrayBuffer(file);
+            }, errorHandler);
+          },
+          errorHandler
+        );
+      }
+
+      function convertRpgmvpToPng(rpgmvpData) {
+        // 在这里实现将 .rpgmvp 数据转换为 PNG 格式的逻辑
+        // 返回转换后的 PNG 数据
+        // 注意: 这只是一个示例,您需要根据实际的 .rpgmvp 文件格式进行转换
+        const pngData = new Uint8Array(/* 转换后的 PNG 数据 */);
+        return pngData;
+      }
+
+      function errorHandler(error) {
+        console.error("文件操作错误:", error);
+      }
+
+      function downloadConvertedImages() {
+        // 在这里实现打包下载转换后的图片的逻辑
+        console.log("打包下载转换后的图片");
+        // 获取外部数据目录的 URL
+        const dirURL = cordova.file.externalDataDirectory;
+
+        // 解析目录 URL 并获取 DirectoryEntry 对象
+        window.resolveLocalFileSystemURL(
+          dirURL,
+          function (dirEntry) {
+            // 读取目录中的所有文件
+            const reader = dirEntry.createReader();
+            reader.readEntries(function (entries) {
+              const convertedImages = entries.filter(function (entry) {
+                return entry.isFile && entry.name.endsWith(".png");
+              });
+
+              // 打包下载转换后的图片
+              // 注意: 这只是一个示例,您可能需要使用其他方法来打包和下载文件
+              const zip = new JSZip();
+              const imgFolder = zip.folder("converted_images");
+
+              let count = 0;
+              convertedImages.forEach(function (fileEntry) {
+                fileEntry.file(function (file) {
+                  const reader = new FileReader();
+                  reader.onloadend = function () {
+                    imgFolder.file(fileEntry.name, this.result, {
+                      base64: true,
+                    });
+                    count++;
+                    if (count === convertedImages.length) {
+                      zip
+                        .generateAsync({ type: "blob" })
+                        .then(function (content) {
+                          saveAs(content, "converted_images.zip");
+                        });
+                    }
+                  };
+                  reader.readAsDataURL(file);
+                }, errorHandler);
+              });
+            }, errorHandler);
+          },
+          errorHandler
+        );
+      }
+
+      document
+        .getElementById("download-btn")
+        .addEventListener("click", downloadConvertedImages, false);
+    </script>
+  </head>
+
+  <body>
+    <div class="container">
+      <h1>RPG Maker MV 文件转换工具</h1>
+      <div class="file-input">
+        <label for="file" class="file-label"
+          >选择一个或多个 .rpgmvp 文件:</label
+        >
+        <input
+          type="file"
+          id="file"
+          accept=".rpgmvp"
+          onchange="handleFileSelect(event)"
+          multiple
+        />
+      </div>
+      <div class="option-input">
+        <label class="checkbox-label">
+          <input type="checkbox" id="pack-files" />
+          <span class="checkbox-text">将所有转换后的图片打包下载</span>
+        </label>
+      </div>
+      <div class="github-link">
+        <p>请访问项目的 GitHub 仓库以获取更多信息和源代码:</p>
+        <a href="https://github.com/DrRyanHuang/rpgmvp2png" target="_blank"
+          >https://github.com/DrRyanHuang/rpgmvp2png</a
+        >
+      </div>
+      <div class="footer">&copy; 2024 RPG Maker MV 文件转换工具</div>
+    </div>
+  </body>
+</html>
