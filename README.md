@@ -49,7 +49,7 @@ python rpgmvp2png.py examples
 This command will decrypt all .rpgmvp files in the examples directory and create a directory with the same structure as the original directory in the current directory.📂✨
 
 
-The rpgmvp2png.html file is a web-based tool for decrypting .rpgmvp files.🌐
+The rpgmvp2png.html file is a web-based tool for decrypting .rpgmvp files.🌐 You can use it directly [here](https://drryanhuang.github.io/rpgmvp2png/rpgmvp2png.html)
 
 
 Usage 🛠️
