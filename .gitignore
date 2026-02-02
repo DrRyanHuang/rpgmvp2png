@@ -1,3 +1,5 @@
 examples/*.png
 cordova/*
 .vscode/*
+*.pyc
+.DS_Store

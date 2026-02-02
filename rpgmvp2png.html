@@ -1,180 +1,53 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8">
-    <title>RPG Maker MV 文件转换工具</title>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        background-color: #f0f0f0;
-        margin: 0;
-        padding: 20px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 100vh;
-      }
+<html lang="en">
 
-      .container {
-        max-width: 500px;
-        width: 100%;
-        background-color: #fff;
-        border-radius: 5px;
-        padding: 30px;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        text-align: center;
-      }
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RPGMVP 2 PNG Converter</title>
+  <meta name="description" content="A minimalist tool to convert RPG Maker MV encrypted images to PNG.">
+  <link rel="stylesheet" href="web/css/style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="web/js/app.js" defer></script>
+</head>
 
-      h1 {
-        font-size: 24px;
-        margin-bottom: 20px;
-      }
-
-      .file-input {
-        margin-bottom: 20px;
-      }
-
-      .file-input label {
-        display: block;
-        font-size: 16px;
-        margin-bottom: 10px;
-      }
-
-      .file-input input[type="file"] {
-        display: inline-block;
-        background-color: #f5f5f5;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        padding: 6px 12px;
-        cursor: pointer;
-      }
-
-      .option-input {
-        margin-bottom: 20px;
-      }
-
-      .option-input label {
-        display: inline-flex;
-        align-items: center;
-        font-size: 14px;
-        color: #555;
-        cursor: pointer;
-      }
-
-      .option-input input[type="checkbox"] {
-        margin-right: 8px;
-      }
-
-      .footer {
-        font-size: 12px;
-        color: #888;
-        margin-top: 20px;
-      }
-
-      .github-link {
-        margin-top: 5px;
-        text-align: center;
-        font-size: 12px;
-      }
-    </style>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
-    <script>
-      // 转换 RPG Maker MV 文件的函数
-      function decryptRPGMVPFile(file) {
-        return new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.onload = function (e) {
-            const data = new Uint8Array(e.target.result);
-            const pngHeader = new Uint8Array([
-              0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00,
-              0x0d, 0x49, 0x48, 0x44, 0x52,
-            ]);
-            const pngData = new Uint8Array(pngHeader.length + data.length - 32);
-            pngData.set(pngHeader);
-            pngData.set(data.slice(32), pngHeader.length);
-            resolve(pngData);
-          };
-          reader.readAsArrayBuffer(file);
-        });
-      }
-
-      // 处理文件选择事件的函数
-      async function handleFileSelect(event) {
-        const files = event.target.files;
-        const packFiles = document.getElementById("pack-files").checked;
-
-        if (packFiles) {
-          // 将所有图片打包在一起下载
-          const zipWriter = new JSZip();
-          const decryptPromises = [];
-
-          for (const file of files) {
-            if (file.name.endsWith(".rpgmvp")) {
-              decryptPromises.push(
-                decryptRPGMVPFile(file).then((pngData) => {
-                  zipWriter.file(file.name.replace(".rpgmvp", ".png"), pngData);
-                })
-              );
-            }
-          }
-
-          await Promise.all(decryptPromises);
-
-          const content = await zipWriter.generateAsync({ type: "blob" });
-          const url = URL.createObjectURL(content);
-          const link = document.createElement("a");
-          link.href = url;
-          link.download = "converted_files.zip";
-          link.click();
-          URL.revokeObjectURL(url);
-        } else {
-          // 单独下载每个图片
-          for (const file of files) {
-            if (file.name.endsWith(".rpgmvp")) {
-              const pngData = await decryptRPGMVPFile(file);
-              const blob = new Blob([pngData], { type: "image/png" });
-              const url = URL.createObjectURL(blob);
-              const link = document.createElement("a");
-              link.href = url;
-              link.download = file.name.replace(".rpgmvp", ".png");
-              link.click();
-              URL.revokeObjectURL(url);
-            }
-          }
-        }
-      }
-    </script>
-  </head>
-
-  <body>
-    <div class="container">
-      <h1>RPG Maker MV 文件转换工具</h1>
-      <div class="file-input">
-        <label for="file" class="file-label"
-          >选择一个或多个 .rpgmvp 文件:</label
-        >
-        <input
-          type="file"
-          id="file"
-          accept=".rpgmvp"
-          onchange="handleFileSelect(event)"
-          multiple
-        />
+<body>
+  <div class="container">
+    <header>
+      <div class="header-top">
+        <h1>RPGMVP <span class="accent">2</span> PNG</h1>
+        <button id="lang-toggle" class="lang-btn" aria-label="Switch Language">中文</button>
       </div>
-      <div class="option-input">
-        <label class="checkbox-label">
-          <input type="checkbox" id="pack-files" />
-          <span class="checkbox-text">将所有转换后的图片打包下载</span>
+      <p class="subtitle" data-i18n="subtitle">Secure, local-only decryption for your RPG Maker MV assets.</p>
+    </header>
+
+    <main>
+      <div class="upload-area" id="drop-zone">
+        <input type="file" id="file" accept=".rpgmvp" multiple hidden />
+        <label for="file" class="upload-label">
+          <span class="icon">📂</span>
+          <span class="text" data-i18n="dropText">Click to browse or drag files here</span>
         </label>
       </div>
-      <div class="github-link">
-        <p>请访问项目的 GitHub 仓库以获取更多信息和源代码:</p>
-        <a href="https://github.com/DrRyanHuang/rpgmvp2png" target="_blank"
-          >https://github.com/DrRyanHuang/rpgmvp2png</a
-        >
+
+      <div class="controls">
+        <label class="toggle-switch">
+          <input type="checkbox" id="pack-files">
+          <span class="slider"></span>
+          <span class="label-text" data-i18n="zipLabel">Download as ZIP archive</span>
+        </label>
       </div>
-      <div class="footer">&copy; 2024 RPG Maker MV 文件转换工具</div>
-    </div>
-  </body>
+
+      <div id="status" class="status-message hidden"></div>
+    </main>
+
+    <footer>
+      <a href="https://github.com/DrRyanHuang/rpgmvp2png" target="_blank" class="github-link" data-i18n="githubLink">
+        View on GitHub
+      </a>
+      <span class="copyright">&copy; 2024 RPGMVP2PNG</span>
+    </footer>
+  </div>
+</body>
+
 </html>
